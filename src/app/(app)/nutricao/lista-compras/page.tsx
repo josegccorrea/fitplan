@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { ShoppingCart, Loader2, RefreshCw, Check } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import { formatBRL } from "@/lib/utils/formatters";
 import type { ShoppingList, ShoppingItem } from "@/types/database";
 
 export default function ListaComprasPage() {
@@ -117,21 +116,15 @@ export default function ListaComprasPage() {
         </div>
       ) : (
         <>
-          {/* Summary */}
-          <div className="bg-surface2 border border-border rounded-xl p-3 flex items-center justify-between">
-            <div>
-              <p className="text-xs text-muted-foreground">Total estimado</p>
-              <p className="text-lg font-mono font-bold text-gold">
-                {formatBRL(list.estimated_total_brl ?? 0)}
-              </p>
-            </div>
+          {/* Refresh */}
+          <div className="flex justify-end">
             <button
               onClick={generateList}
               disabled={generating}
               className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${generating ? "animate-spin" : ""}`} />
-              Atualizar
+              Atualizar lista
             </button>
           </div>
 
@@ -158,8 +151,8 @@ export default function ListaComprasPage() {
                     <span className={`flex-1 text-sm ${item.checked ? "line-through text-muted-foreground" : "text-foreground"}`}>
                       {item.name}
                     </span>
-                    <span className="text-xs font-mono text-muted-foreground">
-                      {formatBRL(item.estimated_cost_brl)}
+                    <span className="text-xs font-mono font-semibold text-ember">
+                      {item.quantity}
                     </span>
                   </button>
                 ))}

@@ -117,14 +117,15 @@ export function buildNutritionPrompt(data: OnboardingFormData): string {
    - Café da Manhã: 07:00 (meal_key: "cafe_da_manha") — máx 3 itens
    - Almoço: 12:00 (meal_key: "almoco") — máx 3 itens, OBRIGATÓRIO 1 item vegetal (salada, legume ou folha verde)
    - Jantar: 19:00 (meal_key: "jantar") — máx 3 itens, OBRIGATÓRIO 1 item vegetal (diferente do almoço)
-3. NUNCA use alimentos das listas de alergias ou não_gosta
-4. Inclua os alimentos obrigatórios distribuídos ao longo da semana
-5. Nomes dos alimentos: máximo 3 palavras, em português brasileiro
-6. meal_key: snake_case sem acentos
-7. quantity: formato "150g", "2 und", "1 xíc", "200ml"
-8. As calorias dos itens somam o total_calories da refeição
-9. A soma dos total_calories das 3 refeições deve ser próxima de ${kcal} kcal
-10. Use alimentos baratos: frango, ovos, arroz, feijão, batata-doce, atum, iogurte, banana, aveia, espinafre, brócolis, cenoura, tomate, abobrinha
+3. CADA item deve ser UM único alimento. NUNCA combine dois alimentos em um item. ERRADO: "Arroz e feijão", "Aveia com banana". CERTO: item separado "Arroz integral" + item separado "Feijão carioca"
+4. NUNCA use alimentos das listas de alergias ou não_gosta
+5. Inclua os alimentos obrigatórios distribuídos ao longo da semana
+6. Nomes dos alimentos: máximo 3 palavras, em português brasileiro
+7. meal_key: snake_case sem acentos
+8. quantity: formato "150g", "2 und", "1 xíc", "200ml" — uma única unidade de medida por item
+9. As calorias dos itens somam o total_calories da refeição
+10. A soma dos total_calories das 3 refeições deve ser próxima de ${kcal} kcal
+11. Use alimentos baratos: frango, ovos, arroz, feijão, batata-doce, atum, iogurte, banana, aveia, espinafre, brócolis, cenoura, tomate, abobrinha
 
 ### DISTRIBUIÇÃO CALÓRICA
 - Café da manhã: ~${Math.round(kcal * 0.28)} kcal
