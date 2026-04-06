@@ -68,8 +68,17 @@ export function OnboardingClient({ initialStep }: Props) {
       });
 
       if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error ?? "Erro ao gerar plano");
+        let errorMsg = "Erro ao gerar plano";
+        try {
+          const err = await res.json();
+          errorMsg = err.error ?? errorMsg;
+        } catch {
+          const text = await res.text().catch(() => "");
+          if (text.toLowerCase().includes("timeout") || res.status === 504) {
+            errorMsg = "A geração demorou muito. Tente novamente.";
+          }
+        }
+        throw new Error(errorMsg);
       }
 
       sessionStorage.removeItem(STORAGE_KEY);
