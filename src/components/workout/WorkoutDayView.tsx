@@ -18,7 +18,7 @@ export function WorkoutDayView({ plan, activeDayIndex }: Props) {
   const today = days.find((d) => d.day_index === activeDayIndex);
   const [finished, setFinished] = useState(false);
 
-  const { getSet, updateSetLocal, logSet, isExerciseComplete, completeWorkout, session } =
+  const { getSet, updateSetLocal, logSet, isExerciseComplete, completeWorkout, session, lastSets } =
     useWorkoutSession(activeDayIndex, plan.id);
 
   async function handleFinishWorkout() {
@@ -71,9 +71,10 @@ export function WorkoutDayView({ plan, activeDayIndex }: Props) {
     );
   }
 
-  const allComplete = today.exercises.every((ex) =>
-    isExerciseComplete(ex.exercise_key, ex.sets)
-  );
+  const allComplete = today.exercises.every((ex) => {
+    const isCardio = ex.muscle_group === "cardiovascular";
+    return isExerciseComplete(ex.exercise_key, isCardio ? 1 : ex.sets);
+  });
 
   return (
     <div className="slide-up space-y-4">
@@ -95,6 +96,7 @@ export function WorkoutDayView({ plan, activeDayIndex }: Props) {
             updateSetLocal={updateSetLocal}
             logSet={logSet}
             isComplete={isExerciseComplete(exercise.exercise_key, exercise.sets)}
+            lastSet={lastSets[exercise.exercise_key]}
           />
         ))}
       </div>

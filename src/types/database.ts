@@ -87,6 +87,7 @@ export interface ExerciseSet {
   reps_performed: number | null;
   weight_kg: number | null;
   completed: boolean;
+  notes: string | null; // JSON string para métricas de cardio: {"speed":6.5,"incline":8}
   logged_at: string;
 }
 
