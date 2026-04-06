@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
-import { createClient } from "@/lib/supabase/server";
+import { createServerClient } from "@supabase/ssr";
 import { buildPlanGenerationPrompt } from "@/lib/claude/prompts";
 import { GeneratedPlansSchema } from "@/lib/claude/schemas";
 import type { OnboardingFormData } from "@/types/onboarding";
 
-export const maxDuration = 60; // Vercel Hobby: máx 60s
+export const runtime = "edge";
+export const maxDuration = 25; // Edge runtime: até 25s no Hobby
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY!,
@@ -29,9 +30,26 @@ function extractJSON(text: string): unknown {
   return JSON.parse(jsonMatch[0]);
 }
 
+function createEdgeClient(request: NextRequest) {
+  return createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll();
+        },
+        setAll() {
+          // Edge: cookies são gerenciados pelo proxy (proxy.ts)
+        },
+      },
+    }
+  );
+}
+
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient();
+    const supabase = createEdgeClient(request);
 
     // Verify authentication
     const {
