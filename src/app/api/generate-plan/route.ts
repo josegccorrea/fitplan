@@ -56,13 +56,15 @@ export async function POST(request: NextRequest) {
 
     const body = (await request.json()) as OnboardingFormData;
 
-    // Chamada 1: plano de treino (~5-8s)
-    const workoutRaw = await callClaude(buildWorkoutPrompt(body));
+    // Chamadas em paralelo: treino + nutrição simultâneos (~20-25s total vs ~50s sequencial)
+    const [workoutRaw, nutritionRaw] = await Promise.all([
+      callClaude(buildWorkoutPrompt(body)),
+      callClaude(buildNutritionPrompt(body)),
+    ]);
+
     const workoutParsed = extractJSON(workoutRaw) as { workout_plan: unknown };
     const validatedWorkout = WorkoutPlanSchema.parse(workoutParsed.workout_plan);
 
-    // Chamada 2: plano alimentar (~5-8s)
-    const nutritionRaw = await callClaude(buildNutritionPrompt(body));
     const nutritionParsed = extractJSON(nutritionRaw) as { nutrition_plan: unknown };
     const validatedNutrition = NutritionPlanSchema.parse(nutritionParsed.nutrition_plan);
 
