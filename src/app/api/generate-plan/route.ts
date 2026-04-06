@@ -13,8 +13,8 @@ const anthropic = new Anthropic({
 
 async function callClaude(prompt: string): Promise<string> {
   const message = await anthropic.messages.create({
-    model: "claude-haiku-4-5-20251001",
-    max_tokens: 8096,
+    model: "claude-sonnet-4-6",
+    max_tokens: 16000,
     messages: [{ role: "user", content: prompt }],
   });
 
