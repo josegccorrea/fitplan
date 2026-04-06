@@ -30,6 +30,35 @@ interface ParsedQuantity {
   unit: string; // normalized: g, ml, und, xíc, etc.
 }
 
+// Palavras de preparo/modo de fazer que não são o ingrediente em si
+const PREP_SUFFIXES = new RegExp(
+  `\\s+(grelhad[oa]|mexid[oa]|cozid[oa]|fatiad[oa]|moíd[oa]|assad[oa]|refogad[oa]|temperado[oa]|picad[oa]|ensopado[oa]|frit[oa]|cru[a]?|no forno|na chapa|em lata|no vapor|ao molho|com legumes)s?$`,
+  "gi"
+);
+
+/** Remove modo de preparo do nome, retornando só o ingrediente */
+function toIngredient(name: string): string {
+  return name.replace(PREP_SUFFIXES, "").trim();
+}
+
+/**
+ * Divide itens compostos como "Arroz e feijão" ou "Aveia com banana"
+ * em itens individuais, repartindo a quantidade proporcionalmente.
+ */
+function splitCompound(
+  name: string,
+  parsed: ParsedQuantity | null
+): Array<{ name: string; parsed: ParsedQuantity | null }> {
+  const parts = name.split(/\s+(?:e|com)\s+/i).map((p) => p.trim()).filter(Boolean);
+  if (parts.length <= 1) return [{ name, parsed }];
+
+  const splitParsed = parsed
+    ? { amount: parsed.amount / parts.length, unit: parsed.unit }
+    : null;
+
+  return parts.map((part) => ({ name: part, parsed: splitParsed }));
+}
+
 function parseQuantity(q: string): ParsedQuantity | null {
   const normalized = q.trim().toLowerCase();
   // Match: "150g", "3 und", "1.5kg", "200ml", "2L", "1 xíc", "3 fatias"
@@ -101,28 +130,35 @@ function aggregateShoppingList(
   for (const day of planData.days) {
     for (const meal of day.meals) {
       for (const item of meal.items) {
-        const displayName = item.name.charAt(0).toUpperCase() + item.name.slice(1).toLowerCase();
-        const parsed = parseQuantity(item.quantity);
+        const rawParsed = parseQuantity(item.quantity);
 
-        // Key by name + unit to handle same food in different units
-        const unit = parsed?.unit ?? "und";
-        const key = `${item.name.toLowerCase().trim()}||${unit}`;
+        // 1. Dividir itens compostos ("Arroz e feijão" → "Arroz" + "Feijão")
+        const parts = splitCompound(item.name, rawParsed);
 
-        if (!items[key]) {
-          items[key] = {
-            displayName,
-            category: CATEGORY_MAP[item.category] ?? "Outros",
-            categoryKey: item.category,
-            totalAmount: 0,
-            unit,
-            unparsedCount: 0,
-          };
-        }
+        for (const { name: partName, parsed } of parts) {
+          // 2. Remover modo de preparo ("Frango grelhado" → "Frango")
+          const ingredient = toIngredient(partName);
+          const displayName = ingredient.charAt(0).toUpperCase() + ingredient.slice(1).toLowerCase();
 
-        if (parsed) {
-          items[key].totalAmount += parsed.amount;
-        } else {
-          items[key].unparsedCount += 1;
+          const unit = parsed?.unit ?? "und";
+          const key = `${ingredient.toLowerCase().trim()}||${unit}`;
+
+          if (!items[key]) {
+            items[key] = {
+              displayName,
+              category: CATEGORY_MAP[item.category] ?? "Outros",
+              categoryKey: item.category,
+              totalAmount: 0,
+              unit,
+              unparsedCount: 0,
+            };
+          }
+
+          if (parsed) {
+            items[key].totalAmount += parsed.amount;
+          } else {
+            items[key].unparsedCount += 1;
+          }
         }
       }
     }
