@@ -12,10 +12,11 @@ const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY!,
 });
 
-async function callClaude(prompt: string): Promise<string> {
+async function callClaude(prompt: string, model: "sonnet" | "haiku" = "sonnet", maxTokens = 7000): Promise<string> {
+  const modelId = model === "haiku" ? "claude-haiku-4-5-20251001" : "claude-sonnet-4-6";
   const message = await anthropic.messages.create({
-    model: "claude-sonnet-4-6",
-    max_tokens: 16000,
+    model: modelId,
+    max_tokens: maxTokens,
     messages: [{ role: "user", content: prompt }],
   });
 
@@ -59,9 +60,9 @@ export async function POST(request: NextRequest) {
 
     // 3 chamadas em paralelo: treino + nutrição + bebidas (~20-25s total)
     const [workoutRaw, nutritionRaw, beveragesRaw] = await Promise.all([
-      callClaude(buildWorkoutPrompt(body)),
-      callClaude(buildNutritionPrompt(body)),
-      callClaude(buildBeveragesPrompt(body)),
+      callClaude(buildWorkoutPrompt(body), "sonnet", 7000),
+      callClaude(buildNutritionPrompt(body), "sonnet", 7000),
+      callClaude(buildBeveragesPrompt(body), "haiku", 2000),
     ]);
 
     const workoutParsed = extractJSON(workoutRaw) as { workout_plan: unknown };
