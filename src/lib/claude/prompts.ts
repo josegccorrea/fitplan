@@ -113,27 +113,24 @@ export function buildNutritionPrompt(data: OnboardingFormData): string {
 
 ### REGRAS DE GERAÇÃO
 1. Gere exatamente 7 dias (day_index 0 a 6)
-2. Cada dia tem EXATAMENTE 4 refeições:
-   - Café da Manhã: 07:00 (meal_key: "cafe_da_manha")
-   - Almoço: 12:00 (meal_key: "almoco")
-   - Lanche da Tarde: 16:00 (meal_key: "lanche_tarde")
-   - Jantar: 20:00 (meal_key: "jantar")
-3. Máximo 3 itens por refeição
-4. NUNCA use alimentos das listas de alergias ou não_gosta
-5. Inclua os alimentos obrigatórios distribuídos ao longo da semana
-6. Nomes dos alimentos: máximo 3 palavras, em português brasileiro
-7. meal_key: snake_case sem acentos
-8. quantity: formato "150g", "2 und", "1 xíc", "200ml"
-9. As calorias dos itens de cada refeição devem somar o total_calories da refeição
-10. A soma dos total_calories das 4 refeições deve ser próxima de ${kcal} kcal
-11. Use alimentos baratos e acessíveis: frango, ovos, arroz, feijão, batata-doce, atum, iogurte, banana, aveia, espinafre
+2. Cada dia tem EXATAMENTE 3 refeições:
+   - Café da Manhã: 07:00 (meal_key: "cafe_da_manha") — máx 3 itens
+   - Almoço: 12:00 (meal_key: "almoco") — máx 3 itens, OBRIGATÓRIO 1 item vegetal (salada, legume ou folha verde)
+   - Jantar: 19:00 (meal_key: "jantar") — máx 3 itens, OBRIGATÓRIO 1 item vegetal (diferente do almoço)
+3. NUNCA use alimentos das listas de alergias ou não_gosta
+4. Inclua os alimentos obrigatórios distribuídos ao longo da semana
+5. Nomes dos alimentos: máximo 3 palavras, em português brasileiro
+6. meal_key: snake_case sem acentos
+7. quantity: formato "150g", "2 und", "1 xíc", "200ml"
+8. As calorias dos itens somam o total_calories da refeição
+9. A soma dos total_calories das 3 refeições deve ser próxima de ${kcal} kcal
+10. Use alimentos baratos: frango, ovos, arroz, feijão, batata-doce, atum, iogurte, banana, aveia, espinafre, brócolis, cenoura, tomate, abobrinha
 
-### DISTRIBUIÇÃO CALÓRICA SUGERIDA
-- Café da manhã: ~${Math.round(kcal * 0.22)} kcal
-- Almoço: ~${Math.round(kcal * 0.35)} kcal
-- Lanche da tarde: ~${Math.round(kcal * 0.13)} kcal
-- Jantar: ~${Math.round(kcal * 0.30)} kcal
+### DISTRIBUIÇÃO CALÓRICA
+- Café da manhã: ~${Math.round(kcal * 0.28)} kcal
+- Almoço: ~${Math.round(kcal * 0.40)} kcal
+- Jantar: ~${Math.round(kcal * 0.32)} kcal
 
 ### FORMATO DE SAÍDA (JSON exato)
-{"nutrition_plan":{"daily_calories":${kcal},"macros":{"protein_g":${prot},"carbs_g":${carbs},"fat_g":${fat}},"days":[{"day_index":0,"label":"Segunda-feira","total_calories":${kcal},"meals":[{"meal_key":"cafe_da_manha","name":"Café da Manhã","time":"07:00","total_calories":${Math.round(kcal * 0.22)},"items":[{"name":"Ovos mexidos","quantity":"3 und","calories":210,"protein_g":18,"carbs_g":2,"fat_g":14,"category":"proteina"},{"name":"Aveia com banana","quantity":"50g + 1 und","calories":220,"protein_g":6,"carbs_g":45,"fat_g":3,"category":"carboidrato"}]},{"meal_key":"almoco","name":"Almoço","time":"12:00","total_calories":${Math.round(kcal * 0.35)},"items":[{"name":"Frango grelhado","quantity":"150g","calories":250,"protein_g":45,"carbs_g":0,"fat_g":5,"category":"proteina"},{"name":"Arroz integral","quantity":"150g","calories":195,"protein_g":4,"carbs_g":42,"fat_g":1,"category":"carboidrato"},{"name":"Salada verde","quantity":"100g","calories":25,"protein_g":2,"carbs_g":4,"fat_g":0,"category":"vegetal"}]},{"meal_key":"lanche_tarde","name":"Lanche da Tarde","time":"16:00","total_calories":${Math.round(kcal * 0.13)},"items":[{"name":"Iogurte grego","quantity":"170g","calories":130,"protein_g":17,"carbs_g":8,"fat_g":3,"category":"laticinios"},{"name":"Água de coco","quantity":"300ml","calories":60,"protein_g":1,"carbs_g":14,"fat_g":0,"category":"outro"}]},{"meal_key":"jantar","name":"Jantar","time":"20:00","total_calories":${Math.round(kcal * 0.30)},"items":[{"name":"Patinho moído","quantity":"150g","calories":280,"protein_g":38,"carbs_g":0,"fat_g":12,"category":"proteina"},{"name":"Batata-doce","quantity":"150g","calories":130,"protein_g":2,"carbs_g":30,"fat_g":0,"category":"carboidrato"},{"name":"Brócolis refogado","quantity":"100g","calories":55,"protein_g":4,"carbs_g":8,"fat_g":2,"category":"vegetal"}]}]}]}}`;
+{"nutrition_plan":{"daily_calories":${kcal},"macros":{"protein_g":${prot},"carbs_g":${carbs},"fat_g":${fat}},"days":[{"day_index":0,"label":"Segunda-feira","total_calories":${kcal},"meals":[{"meal_key":"cafe_da_manha","name":"Café da Manhã","time":"07:00","total_calories":${Math.round(kcal * 0.28)},"items":[{"name":"Ovos mexidos","quantity":"3 und","calories":210,"protein_g":18,"carbs_g":2,"fat_g":14,"category":"proteina"},{"name":"Aveia com banana","quantity":"50g","calories":190,"protein_g":6,"carbs_g":38,"fat_g":3,"category":"carboidrato"}]},{"meal_key":"almoco","name":"Almoço","time":"12:00","total_calories":${Math.round(kcal * 0.40)},"items":[{"name":"Frango grelhado","quantity":"150g","calories":250,"protein_g":45,"carbs_g":0,"fat_g":5,"category":"proteina"},{"name":"Arroz e feijão","quantity":"200g","calories":280,"protein_g":10,"carbs_g":55,"fat_g":2,"category":"carboidrato"},{"name":"Salada verde","quantity":"100g","calories":25,"protein_g":2,"carbs_g":4,"fat_g":0,"category":"vegetal"}]},{"meal_key":"jantar","name":"Jantar","time":"19:00","total_calories":${Math.round(kcal * 0.32)},"items":[{"name":"Patinho moído","quantity":"150g","calories":280,"protein_g":38,"carbs_g":0,"fat_g":12,"category":"proteina"},{"name":"Batata-doce","quantity":"150g","calories":130,"protein_g":2,"carbs_g":30,"fat_g":0,"category":"carboidrato"},{"name":"Brócolis refogado","quantity":"100g","calories":55,"protein_g":4,"carbs_g":8,"fat_g":2,"category":"vegetal"}]}]}]}}`;
 }
