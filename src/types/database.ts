@@ -14,6 +14,7 @@ export type FoodCategory =
   | "vegetal"
   | "fruta"
   | "laticinios"
+  | "bebida"
   | "outro";
 export type PeriodType = "semanal" | "mensal";
 
@@ -35,6 +36,7 @@ export interface Profile {
   disliked_foods: string[];
   injuries: string | null;
   available_days_week: number;
+  training_days: number[] | null;
   must_have_foods: string[];
   monthly_budget_brl: number | null;
   prefers_free_weights: boolean;

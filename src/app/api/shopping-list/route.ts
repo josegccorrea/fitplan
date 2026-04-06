@@ -11,6 +11,7 @@ const CATEGORY_MAP: Record<string, string> = {
   vegetal: "Vegetais e Legumes",
   fruta: "Frutas",
   laticinios: "Laticínios",
+  bebida: "Bebidas e Hidratação",
   outro: "Outros",
 };
 
@@ -22,6 +23,7 @@ const PRICE_PER_UNIT: Record<string, { per: number; unit: "100g" | "100ml" | "un
   vegetal:     { per: 0.9,  unit: "100g"  },
   fruta:       { per: 1.2,  unit: "100g"  },
   laticinios:  { per: 2.0,  unit: "100g"  },
+  bebida:      { per: 0.5,  unit: "100ml" },
   outro:       { per: 1.5,  unit: "100ml" },
 };
 
@@ -186,7 +188,7 @@ function aggregateShoppingList(
   // Sort categories in a logical order
   const categoryOrder = [
     "Proteínas", "Carboidratos", "Vegetais e Legumes",
-    "Frutas", "Laticínios", "Gorduras e Oleaginosas", "Outros",
+    "Frutas", "Laticínios", "Gorduras e Oleaginosas", "Bebidas e Hidratação", "Outros",
   ];
 
   return categoryOrder

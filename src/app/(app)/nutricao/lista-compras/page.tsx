@@ -14,24 +14,23 @@ export default function ListaComprasPage() {
   useEffect(() => {
     loadList();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [periodType]);
 
   async function loadList() {
+    setLoading(true);
     const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+    if (!user) { setLoading(false); return; }
 
-    const weekStart = new Date();
-    weekStart.setDate(weekStart.getDate() - weekStart.getDay() + 1);
-    const weekStartStr = weekStart.toISOString().split("T")[0];
-
+    // Busca a lista mais recente independente da semana — persiste até o usuário atualizar
     const { data } = await supabase
       .from("shopping_lists")
       .select("*")
       .eq("user_id", user.id)
-      .eq("week_start_date", weekStartStr)
       .eq("period_type", periodType)
-      .single();
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
 
     setList(data as ShoppingList | null);
     setLoading(false);

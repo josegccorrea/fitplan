@@ -104,19 +104,23 @@ export function buildNutritionPrompt(data: OnboardingFormData): string {
 - Orçamento: R$${dailyBudget}/dia
 
 ### PRINCÍPIOS CIENTÍFICOS — APLICAR OBRIGATORIAMENTE
-1. PROTEÍNA: Distribua ${prot}g de proteína em 4 refeições (meta 25-40g por refeição). Fontes: frango, atum, ovos, carne magra, whey, iogurte grego.
-2. VARIEDADE MEDITERRÂNEA: Inclua ao menos 1 item vegetal (salada, legumes, folhas verdes, tomate, abobrinha, brócolis, cenoura) no almoço E no jantar.
-3. DEFICIT SEGURO: Meta de ${kcal} kcal/dia (deficit de ${data.goal === "perder_gordura" ? "500" : "0"} kcal). Nunca abaixo de 1500 kcal para homens, 1300 para mulheres.
-4. LEGUMINOSAS: Inclua feijão, lentilha ou grão-de-bico ao menos 1x/dia (fibras + proteína vegetal).
-5. GORDURAS BOAS: Use azeite de oliva como tempero no almoço/jantar.
-6. HIDRATAÇÃO: O lanche da tarde deve incluir um item de hidratação (água de coco, chá verde, água com limão).
+1. PROTEÍNA: Distribua ${prot}g de proteína em 3 refeições (meta 30-50g por refeição). Fontes: frango, atum, ovos, carne magra, whey, iogurte grego.
+2. HIDRATAÇÃO: Inclua 1 bebida em CADA refeição como último item (category: "bebida"). Exemplos:
+   - Café da manhã: café sem açúcar (200ml), chá verde (200ml), vitamina de frutas (200ml)
+   - Almoço: suco natural (200ml), água com limão (300ml), água de coco (200ml)
+   - Jantar: chá de camomila (200ml), água com limão (300ml), suco de maracujá natural (200ml)
+   Use quantity em ml. Bebidas devem ter baixas calorias (0-80 kcal). Isso aplica o princípio: 35ml/kg/dia de hidratação.
+3. VARIEDADE MEDITERRÂNEA: Inclua ao menos 1 item vegetal (salada, legumes, folhas verdes, tomate, abobrinha, brócolis, cenoura) no almoço E no jantar.
+4. DEFICIT SEGURO: Meta de ${kcal} kcal/dia (deficit de ${data.goal === "perder_gordura" ? "500" : "0"} kcal). Nunca abaixo de 1500 kcal para homens, 1300 para mulheres.
+5. LEGUMINOSAS: Inclua feijão, lentilha ou grão-de-bico ao menos 1x/dia (fibras + proteína vegetal).
+6. GORDURAS BOAS: Use azeite de oliva como tempero no almoço/jantar.
 
 ### REGRAS DE GERAÇÃO
 1. Gere exatamente 7 dias (day_index 0 a 6)
 2. Cada dia tem EXATAMENTE 3 refeições:
-   - Café da Manhã: 07:00 (meal_key: "cafe_da_manha") — máx 3 itens
-   - Almoço: 12:00 (meal_key: "almoco") — máx 3 itens, OBRIGATÓRIO 1 item vegetal (salada, legume ou folha verde)
-   - Jantar: 19:00 (meal_key: "jantar") — máx 3 itens, OBRIGATÓRIO 1 item vegetal (diferente do almoço)
+   - Café da Manhã: 07:00 (meal_key: "cafe_da_manha") — máx 4 itens (último DEVE ser bebida: café, chá ou vitamina)
+   - Almoço: 12:00 (meal_key: "almoco") — máx 4 itens (OBRIGATÓRIO 1 vegetal + 1 bebida como último item)
+   - Jantar: 19:00 (meal_key: "jantar") — máx 4 itens (OBRIGATÓRIO 1 vegetal diferente do almoço + 1 bebida como último item)
 3. CADA item deve ser UM único alimento. NUNCA combine dois alimentos em um item. ERRADO: "Arroz e feijão", "Aveia com banana". CERTO: item separado "Arroz integral" + item separado "Feijão carioca"
 4. NUNCA use alimentos das listas de alergias ou não_gosta
 5. Inclua os alimentos obrigatórios distribuídos ao longo da semana

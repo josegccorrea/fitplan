@@ -45,6 +45,30 @@ export default function PerfilPage() {
   }
 
   async function handleRegeneratePlan() {
+    // Pré-preenche o sessionStorage com os dados atuais do perfil
+    // para que o onboarding inicie com os valores da última geração
+    if (profile) {
+      const prefill = {
+        full_name: profile.full_name ?? "",
+        weight_kg: profile.weight_kg,
+        height_cm: profile.height_cm,
+        age: profile.age,
+        sex: profile.sex,
+        body_fat_pct: profile.body_fat_pct,
+        goal: profile.goal,
+        experience_level: profile.experience_level,
+        equipment_type: profile.equipment_type,
+        training_days: profile.training_days ?? undefined,
+        available_days_week: profile.available_days_week,
+        allergies: profile.allergies ?? [],
+        disliked_foods: profile.disliked_foods ?? [],
+        injuries: profile.injuries ?? "",
+        must_have_foods: profile.must_have_foods ?? [],
+        monthly_budget_brl: profile.monthly_budget_brl,
+        prefers_free_weights: profile.prefers_free_weights,
+      };
+      sessionStorage.setItem("fitplan_onboarding", JSON.stringify(prefill));
+    }
     const supabase = createClient();
     await supabase.from("profiles").update({ onboarding_completed: false }).eq("id", profile!.id);
     router.push("/onboarding/step/1");

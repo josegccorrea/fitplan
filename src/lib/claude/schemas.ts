@@ -7,6 +7,7 @@ const FoodCategoryEnum = z.enum([
   "vegetal",
   "fruta",
   "laticinios",
+  "bebida",
   "outro",
 ]).catch("outro");
 
