@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import type { NutritionPlanData, ShoppingCategory, ShoppingItem } from "@/types/database";
 
+export const maxDuration = 30;
+
 const CATEGORY_MAP: Record<string, string> = {
   proteina: "Proteínas",
   carboidrato: "Carboidratos",

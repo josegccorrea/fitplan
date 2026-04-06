@@ -5,6 +5,8 @@ import { buildPlanGenerationPrompt } from "@/lib/claude/prompts";
 import { GeneratedPlansSchema } from "@/lib/claude/schemas";
 import type { OnboardingFormData } from "@/types/onboarding";
 
+export const maxDuration = 60; // Vercel Hobby: máx 60s
+
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY!,
 });
