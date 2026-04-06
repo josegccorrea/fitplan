@@ -35,7 +35,7 @@ const NutritionDaySchema = z.object({
   meals: z.array(MealSchema),
 });
 
-const NutritionPlanSchema = z.object({
+export const NutritionPlanSchema = z.object({
   daily_calories: z.number(),
   macros: z.object({
     protein_g: z.number(),
@@ -51,9 +51,9 @@ const ExerciseSchema = z.object({
   sets: z.number().int().min(1),
   reps: z.string(),
   rest_seconds: z.number().int().min(0),
-  technique_note: z.string(),
+  technique_note: z.string().optional().default(""),
   muscle_group: z.string(),
-  equipment: z.string(),
+  equipment: z.string().optional().default(""),
 });
 
 const WorkoutDaySchema = z.object({
@@ -65,7 +65,7 @@ const WorkoutDaySchema = z.object({
   exercises: z.array(ExerciseSchema),
 });
 
-const WorkoutPlanSchema = z.object({
+export const WorkoutPlanSchema = z.object({
   days: z.array(WorkoutDaySchema).length(7),
 });
 

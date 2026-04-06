@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { createServerClient } from "@supabase/ssr";
-import { buildPlanGenerationPrompt } from "@/lib/claude/prompts";
-import { GeneratedPlansSchema } from "@/lib/claude/schemas";
+import { buildWorkoutPrompt, buildNutritionPrompt } from "@/lib/claude/prompts";
+import { WorkoutPlanSchema, NutritionPlanSchema } from "@/lib/claude/schemas";
 import type { OnboardingFormData } from "@/types/onboarding";
 
 export const runtime = "edge";
-export const maxDuration = 25; // Edge runtime: até 25s no Hobby
+export const maxDuration = 25;
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY!,
@@ -15,7 +15,7 @@ const anthropic = new Anthropic({
 async function callClaude(prompt: string): Promise<string> {
   const message = await anthropic.messages.create({
     model: "claude-haiku-4-5-20251001",
-    max_tokens: 8000,
+    max_tokens: 4000,
     messages: [{ role: "user", content: prompt }],
   });
 
@@ -24,9 +24,8 @@ async function callClaude(prompt: string): Promise<string> {
 }
 
 function extractJSON(text: string): unknown {
-  // Try to find JSON object in the response
   const jsonMatch = text.match(/\{[\s\S]*\}/);
-  if (!jsonMatch) throw new Error("Nenhum JSON encontrado na resposta");
+  if (!jsonMatch) throw new Error("JSON não encontrado na resposta");
   return JSON.parse(jsonMatch[0]);
 }
 
@@ -39,9 +38,7 @@ function createEdgeClient(request: NextRequest) {
         getAll() {
           return request.cookies.getAll();
         },
-        setAll() {
-          // Edge: cookies são gerenciados pelo proxy (proxy.ts)
-        },
+        setAll() {},
       },
     }
   );
@@ -51,7 +48,6 @@ export async function POST(request: NextRequest) {
   try {
     const supabase = createEdgeClient(request);
 
-    // Verify authentication
     const {
       data: { user },
       error: authError,
@@ -61,7 +57,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
     }
 
-    // Check rate limiting (max 3 generations per day)
     const { data: profile } = await supabase
       .from("profiles")
       .select("generation_count")
@@ -70,50 +65,31 @@ export async function POST(request: NextRequest) {
 
     if ((profile?.generation_count ?? 0) >= 10) {
       return NextResponse.json(
-        { error: "Limite de gerações atingido (10). Tente novamente amanhã." },
+        { error: "Limite de gerações atingido (10)." },
         { status: 429 }
       );
     }
 
     const body = (await request.json()) as OnboardingFormData;
 
-    // Build prompt and call Claude
-    const prompt = buildPlanGenerationPrompt(body);
-    let rawResponse = await callClaude(prompt);
+    // Chamada 1: plano de treino (~5-8s)
+    const workoutRaw = await callClaude(buildWorkoutPrompt(body));
+    const workoutParsed = extractJSON(workoutRaw) as { workout_plan: unknown };
+    const validatedWorkout = WorkoutPlanSchema.parse(workoutParsed.workout_plan);
 
-    // Parse and validate
-    let parsed: unknown;
-    try {
-      parsed = extractJSON(rawResponse);
-    } catch {
-      // Retry once with correction hint
-      const retryPrompt = `${prompt}\n\n⚠️ ATENÇÃO: Sua resposta anterior não era JSON válido. Responda APENAS com o JSON, sem nenhum texto antes ou depois.`;
-      rawResponse = await callClaude(retryPrompt);
-      parsed = extractJSON(rawResponse);
-    }
+    // Chamada 2: plano alimentar (~5-8s)
+    const nutritionRaw = await callClaude(buildNutritionPrompt(body));
+    const nutritionParsed = extractJSON(nutritionRaw) as { nutrition_plan: unknown };
+    const validatedNutrition = NutritionPlanSchema.parse(nutritionParsed.nutrition_plan);
 
-    const validated = GeneratedPlansSchema.parse(parsed);
+    // Desativa planos antigos
+    await supabase.from("workout_plans").update({ is_active: false }).eq("user_id", user.id);
+    await supabase.from("nutrition_plans").update({ is_active: false }).eq("user_id", user.id);
 
-    // Save to Supabase inside a transaction-like sequence
-    // Deactivate old plans
-    await supabase
-      .from("workout_plans")
-      .update({ is_active: false })
-      .eq("user_id", user.id);
-
-    await supabase
-      .from("nutrition_plans")
-      .update({ is_active: false })
-      .eq("user_id", user.id);
-
-    // Insert new plans
+    // Insere novos planos
     const { data: workoutPlan, error: wpError } = await supabase
       .from("workout_plans")
-      .insert({
-        user_id: user.id,
-        plan_data: validated.workout_plan,
-        is_active: true,
-      })
+      .insert({ user_id: user.id, plan_data: validatedWorkout, is_active: true })
       .select()
       .single();
 
@@ -121,17 +97,13 @@ export async function POST(request: NextRequest) {
 
     const { data: nutritionPlan, error: npError } = await supabase
       .from("nutrition_plans")
-      .insert({
-        user_id: user.id,
-        plan_data: validated.nutrition_plan,
-        is_active: true,
-      })
+      .insert({ user_id: user.id, plan_data: validatedNutrition, is_active: true })
       .select()
       .single();
 
     if (npError) throw npError;
 
-    // Update profile with onboarding data and mark complete
+    // Atualiza perfil
     const { error: profileError } = await supabase
       .from("profiles")
       .update({
@@ -165,8 +137,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error("Error generating plan:", error);
-    const message =
-      error instanceof Error ? error.message : "Erro ao gerar plano";
+    const message = error instanceof Error ? error.message : "Erro ao gerar plano";
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
