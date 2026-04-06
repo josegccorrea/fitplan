@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { createClient } from "@/lib/supabase/server";
-import { buildWorkoutPrompt, buildNutritionPrompt } from "@/lib/claude/prompts";
-import { WorkoutPlanSchema, NutritionPlanSchema } from "@/lib/claude/schemas";
+import { buildWorkoutPrompt, buildNutritionPrompt, buildBeveragesPrompt } from "@/lib/claude/prompts";
+import { WorkoutPlanSchema, NutritionPlanSchema, BeveragePlanSchema } from "@/lib/claude/schemas";
+import type { BeveragePlan } from "@/lib/claude/schemas";
 import type { OnboardingFormData } from "@/types/onboarding";
 
 export const maxDuration = 60;
@@ -56,17 +57,43 @@ export async function POST(request: NextRequest) {
 
     const body = (await request.json()) as OnboardingFormData;
 
-    // Chamadas em paralelo: treino + nutrição simultâneos (~20-25s total vs ~50s sequencial)
-    const [workoutRaw, nutritionRaw] = await Promise.all([
+    // 3 chamadas em paralelo: treino + nutrição + bebidas (~20-25s total)
+    const [workoutRaw, nutritionRaw, beveragesRaw] = await Promise.all([
       callClaude(buildWorkoutPrompt(body)),
       callClaude(buildNutritionPrompt(body)),
+      callClaude(buildBeveragesPrompt(body)),
     ]);
 
     const workoutParsed = extractJSON(workoutRaw) as { workout_plan: unknown };
     const validatedWorkout = WorkoutPlanSchema.parse(workoutParsed.workout_plan);
 
     const nutritionParsed = extractJSON(nutritionRaw) as { nutrition_plan: unknown };
-    const validatedNutrition = NutritionPlanSchema.parse(nutritionParsed.nutrition_plan);
+    const nutritionBase = NutritionPlanSchema.parse(nutritionParsed.nutrition_plan);
+
+    // Merge bebidas no plano alimentar
+    let validatedNutrition = nutritionBase;
+    try {
+      const beveragesParsed = extractJSON(beveragesRaw) as { beverage_plan: unknown };
+      const beveragePlan = BeveragePlanSchema.parse(beveragesParsed.beverage_plan) as BeveragePlan;
+      validatedNutrition = {
+        ...nutritionBase,
+        days: nutritionBase.days.map((day) => {
+          const beverageDay = beveragePlan.days.find((bd) => bd.day_index === day.day_index);
+          if (!beverageDay) return day;
+          return {
+            ...day,
+            meals: day.meals.map((meal) => {
+              const bev = beverageDay.beverages.find((b) => b.meal_key === meal.meal_key);
+              if (!bev) return meal;
+              return { ...meal, items: [...meal.items, bev] };
+            }),
+          };
+        }),
+      };
+    } catch {
+      // Se o parse de bebidas falhar, continua sem elas (não bloqueia o plano)
+      console.warn("Beverages parse failed, continuing without beverages");
+    }
 
     // Desativa planos antigos
     await supabase.from("workout_plans").update({ is_active: false }).eq("user_id", user.id);

@@ -105,22 +105,17 @@ export function buildNutritionPrompt(data: OnboardingFormData): string {
 
 ### PRINCÍPIOS CIENTÍFICOS — APLICAR OBRIGATORIAMENTE
 1. PROTEÍNA: Distribua ${prot}g de proteína em 3 refeições (meta 30-50g por refeição). Fontes: frango, atum, ovos, carne magra, whey, iogurte grego.
-2. HIDRATAÇÃO: Inclua 1 bebida em CADA refeição como último item (category: "bebida"). Exemplos:
-   - Café da manhã: café sem açúcar (200ml), chá verde (200ml), vitamina de frutas (200ml)
-   - Almoço: suco natural (200ml), água com limão (300ml), água de coco (200ml)
-   - Jantar: chá de camomila (200ml), água com limão (300ml), suco de maracujá natural (200ml)
-   Use quantity em ml. Bebidas devem ter baixas calorias (0-80 kcal). Isso aplica o princípio: 35ml/kg/dia de hidratação.
-3. VARIEDADE MEDITERRÂNEA: Inclua ao menos 1 item vegetal (salada, legumes, folhas verdes, tomate, abobrinha, brócolis, cenoura) no almoço E no jantar.
-4. DEFICIT SEGURO: Meta de ${kcal} kcal/dia (deficit de ${data.goal === "perder_gordura" ? "500" : "0"} kcal). Nunca abaixo de 1500 kcal para homens, 1300 para mulheres.
-5. LEGUMINOSAS: Inclua feijão, lentilha ou grão-de-bico ao menos 1x/dia (fibras + proteína vegetal).
-6. GORDURAS BOAS: Use azeite de oliva como tempero no almoço/jantar.
+2. VARIEDADE MEDITERRÂNEA: Inclua ao menos 1 item vegetal (salada, legumes, folhas verdes, tomate, abobrinha, brócolis, cenoura) no almoço E no jantar.
+3. DEFICIT SEGURO: Meta de ${kcal} kcal/dia (deficit de ${data.goal === "perder_gordura" ? "500" : "0"} kcal). Nunca abaixo de 1500 kcal para homens, 1300 para mulheres.
+4. LEGUMINOSAS: Inclua feijão, lentilha ou grão-de-bico ao menos 1x/dia (fibras + proteína vegetal).
+5. GORDURAS BOAS: Use azeite de oliva como tempero no almoço/jantar.
 
 ### REGRAS DE GERAÇÃO
 1. Gere exatamente 7 dias (day_index 0 a 6)
 2. Cada dia tem EXATAMENTE 3 refeições:
-   - Café da Manhã: 07:00 (meal_key: "cafe_da_manha") — máx 4 itens (último DEVE ser bebida: café, chá ou vitamina)
-   - Almoço: 12:00 (meal_key: "almoco") — máx 4 itens (OBRIGATÓRIO 1 vegetal + 1 bebida como último item)
-   - Jantar: 19:00 (meal_key: "jantar") — máx 4 itens (OBRIGATÓRIO 1 vegetal diferente do almoço + 1 bebida como último item)
+   - Café da Manhã: 07:00 (meal_key: "cafe_da_manha") — máx 3 itens
+   - Almoço: 12:00 (meal_key: "almoco") — máx 3 itens, OBRIGATÓRIO 1 item vegetal (salada, legume ou folha verde)
+   - Jantar: 19:00 (meal_key: "jantar") — máx 3 itens, OBRIGATÓRIO 1 item vegetal (diferente do almoço)
 3. CADA item deve ser UM único alimento. NUNCA combine dois alimentos em um item. ERRADO: "Arroz e feijão", "Aveia com banana". CERTO: item separado "Arroz integral" + item separado "Feijão carioca"
 4. NUNCA use alimentos das listas de alergias ou não_gosta
 5. Inclua os alimentos obrigatórios distribuídos ao longo da semana
@@ -137,5 +132,27 @@ export function buildNutritionPrompt(data: OnboardingFormData): string {
 - Jantar: ~${Math.round(kcal * 0.32)} kcal
 
 ### FORMATO DE SAÍDA (JSON exato)
-{"nutrition_plan":{"daily_calories":${kcal},"macros":{"protein_g":${prot},"carbs_g":${carbs},"fat_g":${fat}},"days":[{"day_index":0,"label":"Segunda-feira","total_calories":${kcal},"meals":[{"meal_key":"cafe_da_manha","name":"Café da Manhã","time":"07:00","total_calories":${Math.round(kcal * 0.28)},"items":[{"name":"Ovos mexidos","quantity":"3 und","calories":210,"protein_g":18,"carbs_g":2,"fat_g":14,"category":"proteina"},{"name":"Aveia com banana","quantity":"50g","calories":190,"protein_g":6,"carbs_g":38,"fat_g":3,"category":"carboidrato"}]},{"meal_key":"almoco","name":"Almoço","time":"12:00","total_calories":${Math.round(kcal * 0.40)},"items":[{"name":"Frango grelhado","quantity":"150g","calories":250,"protein_g":45,"carbs_g":0,"fat_g":5,"category":"proteina"},{"name":"Arroz e feijão","quantity":"200g","calories":280,"protein_g":10,"carbs_g":55,"fat_g":2,"category":"carboidrato"},{"name":"Salada verde","quantity":"100g","calories":25,"protein_g":2,"carbs_g":4,"fat_g":0,"category":"vegetal"}]},{"meal_key":"jantar","name":"Jantar","time":"19:00","total_calories":${Math.round(kcal * 0.32)},"items":[{"name":"Patinho moído","quantity":"150g","calories":280,"protein_g":38,"carbs_g":0,"fat_g":12,"category":"proteina"},{"name":"Batata-doce","quantity":"150g","calories":130,"protein_g":2,"carbs_g":30,"fat_g":0,"category":"carboidrato"},{"name":"Brócolis refogado","quantity":"100g","calories":55,"protein_g":4,"carbs_g":8,"fat_g":2,"category":"vegetal"}]}]}]}}`;
+{"nutrition_plan":{"daily_calories":${kcal},"macros":{"protein_g":${prot},"carbs_g":${carbs},"fat_g":${fat}},"days":[{"day_index":0,"label":"Segunda-feira","total_calories":${kcal},"meals":[{"meal_key":"cafe_da_manha","name":"Café da Manhã","time":"07:00","total_calories":${Math.round(kcal * 0.28)},"items":[{"name":"Ovos","quantity":"3 und","calories":210,"protein_g":18,"carbs_g":2,"fat_g":14,"category":"proteina"},{"name":"Aveia","quantity":"50g","calories":190,"protein_g":6,"carbs_g":38,"fat_g":3,"category":"carboidrato"},{"name":"Banana","quantity":"1 und","calories":90,"protein_g":1,"carbs_g":23,"fat_g":0,"category":"fruta"}]},{"meal_key":"almoco","name":"Almoço","time":"12:00","total_calories":${Math.round(kcal * 0.40)},"items":[{"name":"Frango","quantity":"150g","calories":250,"protein_g":45,"carbs_g":0,"fat_g":5,"category":"proteina"},{"name":"Arroz integral","quantity":"150g","calories":195,"protein_g":4,"carbs_g":42,"fat_g":1,"category":"carboidrato"},{"name":"Salada verde","quantity":"100g","calories":25,"protein_g":2,"carbs_g":4,"fat_g":0,"category":"vegetal"}]},{"meal_key":"jantar","name":"Jantar","time":"19:00","total_calories":${Math.round(kcal * 0.32)},"items":[{"name":"Patinho","quantity":"150g","calories":280,"protein_g":38,"carbs_g":0,"fat_g":12,"category":"proteina"},{"name":"Batata-doce","quantity":"150g","calories":130,"protein_g":2,"carbs_g":30,"fat_g":0,"category":"carboidrato"},{"name":"Brócolis","quantity":"100g","calories":55,"protein_g":4,"carbs_g":8,"fat_g":2,"category":"vegetal"}]}]}]}}`;
+}
+
+export function buildBeveragesPrompt(data: OnboardingFormData): string {
+  return `Você é um nutricionista. Responda APENAS com JSON válido, sem texto extra, sem markdown.
+
+### TAREFA
+Gere 1 bebida para cada refeição dos 7 dias da semana (21 bebidas no total).
+Objetivo do usuário: ${data.goal} | Peso: ${data.weight_kg}kg
+
+### REGRAS
+1. 7 dias (day_index 0=Seg a 6=Dom), 3 refeições por dia: cafe_da_manha, almoco, jantar
+2. 1 bebida por refeição — varie ao longo da semana
+3. Café da manhã: café sem açúcar, chá verde, vitamina natural, achocolatado light
+4. Almoço: suco natural (laranja, limão, abacaxi), água de coco, limonada
+5. Jantar: chá de camomila, chá de ervas, suco de maracujá natural, água com limão
+6. quantity em ml (ex: "200ml", "300ml")
+7. calories: 0-80 kcal
+8. category: sempre "bebida"
+9. name: máximo 3 palavras
+
+### FORMATO DE SAÍDA (JSON exato)
+{"beverage_plan":{"days":[{"day_index":0,"beverages":[{"meal_key":"cafe_da_manha","name":"Café sem açúcar","quantity":"200ml","calories":5,"protein_g":0,"carbs_g":1,"fat_g":0,"category":"bebida"},{"meal_key":"almoco","name":"Suco de laranja","quantity":"200ml","calories":70,"protein_g":1,"carbs_g":17,"fat_g":0,"category":"bebida"},{"meal_key":"jantar","name":"Chá de camomila","quantity":"200ml","calories":2,"protein_g":0,"carbs_g":0,"fat_g":0,"category":"bebida"}]}]}}`;
 }

@@ -76,3 +76,25 @@ export const GeneratedPlansSchema = z.object({
 });
 
 export type GeneratedPlans = z.infer<typeof GeneratedPlansSchema>;
+
+const BeverageItemSchema = z.object({
+  meal_key: z.string(),
+  name: z.string(),
+  quantity: z.string(),
+  calories: z.number(),
+  protein_g: z.number(),
+  carbs_g: z.number(),
+  fat_g: z.number(),
+  category: z.literal("bebida").default("bebida"),
+});
+
+const BeverageDaySchema = z.object({
+  day_index: z.number().int().min(0).max(6),
+  beverages: z.array(BeverageItemSchema),
+});
+
+export const BeveragePlanSchema = z.object({
+  days: z.array(BeverageDaySchema).length(7),
+});
+
+export type BeveragePlan = z.infer<typeof BeveragePlanSchema>;
