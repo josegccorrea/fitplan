@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
-import { createServerClient } from "@supabase/ssr";
+import { createClient } from "@/lib/supabase/server";
 import { buildWorkoutPrompt, buildNutritionPrompt } from "@/lib/claude/prompts";
 import { WorkoutPlanSchema, NutritionPlanSchema } from "@/lib/claude/schemas";
 import type { OnboardingFormData } from "@/types/onboarding";
 
-export const runtime = "edge";
-export const maxDuration = 25;
+export const maxDuration = 60;
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY!,
@@ -29,24 +28,9 @@ function extractJSON(text: string): unknown {
   return JSON.parse(jsonMatch[0]);
 }
 
-function createEdgeClient(request: NextRequest) {
-  return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll();
-        },
-        setAll() {},
-      },
-    }
-  );
-}
-
 export async function POST(request: NextRequest) {
   try {
-    const supabase = createEdgeClient(request);
+    const supabase = await createClient();
 
     const {
       data: { user },
