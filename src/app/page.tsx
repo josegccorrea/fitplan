@@ -1,63 +1,71 @@
-import Image from "next/image";
+import Link from "next/link";
+import { Flame, Dumbbell, UtensilsCrossed, TrendingUp, Sparkles } from "lucide-react";
 
-export default function Home() {
+const features = [
+  { icon: Sparkles, label: "Plano 100% personalizado por IA", desc: "Claude AI cria seu treino e dieta baseados no seu perfil único" },
+  { icon: Dumbbell, label: "Registro de cargas em tempo real", desc: "Log de pesos por série com timer de descanso integrado" },
+  { icon: UtensilsCrossed, label: "Cardápio semanal completo", desc: "7 dias de refeições com macros calculados e lista de compras" },
+  { icon: TrendingUp, label: "Gráficos de evolução", desc: "Acompanhe peso corporal e progressão de cargas ao longo do tempo" },
+];
+
+export default function LandingPage() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="min-h-dvh bg-background flex flex-col">
+      <header className="px-4 py-4 flex items-center justify-between border-b border-border">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-xl bg-ember flex items-center justify-center ember-glow">
+            <Flame className="w-4 h-4 text-white" />
+          </div>
+          <span className="font-display text-xl text-foreground tracking-wide">FitPlan</span>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+        <div className="flex items-center gap-2">
+          <Link href="/login" className="text-sm text-muted-foreground hover:text-foreground transition-colors px-2 py-1.5">
+            Entrar
+          </Link>
+          <Link href="/register" className="bg-ember hover:bg-ember-hover text-white text-sm font-semibold rounded-xl px-3 py-2 transition-colors">
+            Começar grátis
+          </Link>
+        </div>
+      </header>
+
+      <main className="flex-1 flex flex-col items-center justify-center text-center px-4 py-12 max-w-lg mx-auto w-full">
+        <div className="slide-up space-y-6">
+          <div className="w-16 h-16 rounded-2xl bg-ember/20 border border-ember/30 flex items-center justify-center mx-auto ember-glow">
+            <Flame className="w-8 h-8 text-ember flame-pulse" />
+          </div>
+
+          <div>
+            <h1 className="font-display text-4xl text-foreground leading-tight mb-3">
+              Seu Plano de Treino<br />
+              <span className="text-ember">Gerado por IA</span>
+            </h1>
+            <p className="text-muted-foreground text-sm leading-relaxed max-w-xs mx-auto">
+              Responda 6 perguntas. A IA cria um plano personalizado de treino e alimentação baseado em ciência, adaptado ao seu corpo, objetivo e rotina.
+            </p>
+          </div>
+
+          <div className="flex flex-col gap-2 w-full">
+            <Link href="/register" className="w-full bg-ember hover:bg-ember-hover text-white font-bold rounded-xl py-3.5 text-sm transition-colors ember-glow">
+              ✨ Criar meu plano grátis
+            </Link>
+            <Link href="/login" className="w-full border border-border text-muted-foreground hover:text-foreground rounded-xl py-3.5 text-sm font-medium transition-colors">
+              Já tenho conta — Entrar
+            </Link>
+          </div>
+        </div>
+
+        <div className="w-full mt-10 space-y-2.5">
+          {features.map(({ icon: Icon, label, desc }) => (
+            <div key={label} className="flex items-center gap-3 bg-surface2 border border-border rounded-xl p-3.5 text-left">
+              <div className="w-8 h-8 rounded-lg bg-ember/20 flex items-center justify-center flex-shrink-0">
+                <Icon className="w-4 h-4 text-ember" />
+              </div>
+              <div>
+                <div className="text-sm font-semibold text-foreground">{label}</div>
+                <div className="text-xs text-muted-foreground">{desc}</div>
+              </div>
+            </div>
+          ))}
         </div>
       </main>
     </div>
