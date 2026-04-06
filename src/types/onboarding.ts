@@ -16,6 +16,7 @@ export interface OnboardingFormData {
   experience_level: ExperienceLevel;
   equipment_type: EquipmentType;
   available_days_week: number;
+  training_days: number[]; // 0=Seg, 1=Ter, 2=Qua, 3=Qui, 4=Sex, 5=Sáb, 6=Dom
 
   // Step 4 — Restrições
   allergies: string[];

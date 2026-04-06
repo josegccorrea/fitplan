@@ -24,19 +24,53 @@ const equipments: { value: EquipmentType; emoji: string; label: string; descript
   { value: "ao_ar_livre", emoji: "🌳", label: "Ao Ar Livre", description: "Parque, barras fixas, calçada" },
 ];
 
-const dayOptions = [2, 3, 4, 5, 6];
+const WEEK_DAYS = [
+  { index: 0, short: "Seg", full: "Segunda" },
+  { index: 1, short: "Ter", full: "Terça" },
+  { index: 2, short: "Qua", full: "Quarta" },
+  { index: 3, short: "Qui", full: "Quinta" },
+  { index: 4, short: "Sex", full: "Sexta" },
+  { index: 5, short: "Sáb", full: "Sábado" },
+  { index: 6, short: "Dom", full: "Domingo" },
+];
+
+const DEFAULT_TRAINING_DAYS = [1, 3, 5]; // Ter, Qui, Sáb
 
 export function Step3Experience({ defaultValues, onNext, onBack }: Props) {
   const [level, setLevel] = useState<ExperienceLevel | null>(defaultValues.experience_level ?? null);
   const [equipment, setEquipment] = useState<EquipmentType | null>(defaultValues.equipment_type ?? null);
-  const [days, setDays] = useState<number>(defaultValues.available_days_week ?? 4);
-  const [errors, setErrors] = useState({ level: false, equipment: false });
+  const [selectedDays, setSelectedDays] = useState<number[]>(
+    defaultValues.training_days ?? DEFAULT_TRAINING_DAYS
+  );
+  const [errors, setErrors] = useState({ level: false, equipment: false, days: false });
+
+  function toggleDay(index: number) {
+    setSelectedDays((prev) => {
+      if (prev.includes(index)) {
+        if (prev.length <= 2) return prev; // mínimo 2 dias
+        return prev.filter((d) => d !== index);
+      } else {
+        if (prev.length >= 6) return prev; // máximo 6 dias
+        return [...prev, index].sort((a, b) => a - b);
+      }
+    });
+    setErrors((e) => ({ ...e, days: false }));
+  }
 
   function handleNext() {
-    const errs = { level: !level, equipment: !equipment };
+    const errs = {
+      level: !level,
+      equipment: !equipment,
+      days: selectedDays.length < 2,
+    };
     setErrors(errs);
-    if (errs.level || errs.equipment) return;
-    onNext({ experience_level: level!, equipment_type: equipment!, available_days_week: days });
+    if (errs.level || errs.equipment || errs.days) return;
+    onNext({
+      experience_level: level!,
+      equipment_type: equipment!,
+      training_days: selectedDays,
+      available_days_week: selectedDays.length,
+    });
   }
 
   return (
@@ -95,25 +129,34 @@ export function Step3Experience({ defaultValues, onNext, onBack }: Props) {
         {errors.equipment && <p className="text-xs text-destructive mt-1">Selecione onde treina</p>}
       </div>
 
-      {/* Days */}
+      {/* Training Days */}
       <div>
-        <label className="block text-sm font-semibold text-foreground mb-2">
-          Dias disponíveis por semana: <span className="text-ember font-mono">{days}x</span>
+        <label className="block text-sm font-semibold text-foreground mb-1">
+          Quais dias você vai treinar?
         </label>
-        <div className="flex gap-2">
-          {dayOptions.map((d) => (
-            <button
-              key={d}
-              type="button"
-              onClick={() => setDays(d)}
-              className={`flex-1 py-2.5 rounded-xl text-sm font-semibold border transition-colors ${
-                days === d ? "bg-ember border-ember text-white" : "bg-surface2 border-border text-muted-foreground hover:border-ember/50"
-              }`}
-            >
-              {d}x
-            </button>
-          ))}
+        <p className="text-xs text-muted-foreground mb-3">
+          {selectedDays.length} dia{selectedDays.length !== 1 ? "s" : ""} selecionado{selectedDays.length !== 1 ? "s" : ""} · mín. 2, máx. 6
+        </p>
+        <div className="grid grid-cols-7 gap-1.5">
+          {WEEK_DAYS.map((day) => {
+            const isSelected = selectedDays.includes(day.index);
+            return (
+              <button
+                key={day.index}
+                type="button"
+                onClick={() => toggleDay(day.index)}
+                className={`flex flex-col items-center py-2.5 rounded-xl border text-xs font-semibold transition-colors ${
+                  isSelected
+                    ? "bg-ember border-ember text-white"
+                    : "bg-surface2 border-border text-muted-foreground hover:border-ember/50"
+                }`}
+              >
+                {day.short}
+              </button>
+            );
+          })}
         </div>
+        {errors.days && <p className="text-xs text-destructive mt-1">Selecione pelo menos 2 dias</p>}
       </div>
 
       <div className="flex gap-3">
