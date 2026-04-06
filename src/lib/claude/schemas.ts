@@ -8,7 +8,7 @@ const FoodCategoryEnum = z.enum([
   "fruta",
   "laticinios",
   "outro",
-]);
+]).catch("outro");
 
 const FoodItemSchema = z.object({
   name: z.string(),
