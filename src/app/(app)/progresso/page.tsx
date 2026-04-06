@@ -72,14 +72,8 @@ function useExerciseHistory() {
 
       // Agrupar por exercise_key, pegar últimas 5 datas únicas
       const grouped: Record<string, ExerciseHistory> = {};
-      for (const row of data as Array<{
-        exercise_key: string;
-        exercise_name: string;
-        weight_kg: number | null;
-        reps_performed: number | null;
-        notes: string | null;
-        workout_sessions: { session_date: string };
-      }>) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      for (const row of data as Array<any>) {
         const key = row.exercise_key;
         if (!grouped[key]) {
           grouped[key] = {
@@ -89,8 +83,9 @@ function useExerciseHistory() {
             isCardio: false,
           };
         }
-        // Verificar se já temos essa data
-        const date = row.workout_sessions.session_date;
+        // workout_sessions vem como array no join Supabase
+        const ws = Array.isArray(row.workout_sessions) ? row.workout_sessions[0] : row.workout_sessions;
+        const date: string = ws?.session_date;
         const alreadyHas = grouped[key].entries.some((e) => e.date === date);
         if (!alreadyHas && grouped[key].entries.length < 5) {
           grouped[key].entries.push({
